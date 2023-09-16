@@ -62,7 +62,7 @@ form{
     height: 100px;
 }
 
-.login-content h2{
+.content h2{
 	margin: 15px 0;
 	color: #333;
 	text-transform: uppercase;
@@ -80,48 +80,6 @@ form{
 
 .login-content .input-div.one{
 	margin-top: 0;
-}
-
-.login-content .input-div.one .div label{
-	position : absolute;
-    top: 0;
-    left: 0;
-    padding: 10px 0;
-    font-size:16px;
-    color:#03a9f4;
-    pointer-events: none;
-    transition: .5s;
-}
-
-.login-content .input-div.pass .div label{
-	position : absolute;
-    top: 0;
-    left: 0;
-    padding: 10px 0;
-    font-size:16px;
-    color:#03a9f4;
-    pointer-events: none;
-    transition: .5s;
-}
-
-.login-content .input-div.one .div input:focus ~ label,
-.login-content .input-div.one .div input:valid ~ label
-.login-content .input-div.pass .div input:focus ~ label
-{
-	top: -20px;
-	left:0;
-	color:#03a9f4;
-	font-size: 12px;
-}
-
-.login-content .input-div.pass .div input:focus ~ label,
-.login-content .input-div.pass .div input:valid ~ label
-.login-content .input-div.one .div input:focus ~ label
-{
-	top: -20px;
-	left:0;
-	color:#03a9f4;
-	font-size: 12px;
 }
 
 .i{
@@ -220,7 +178,7 @@ a:hover{
 	border-radius: 25px;
 	outline: none;
 	border: none;
-	background-image: linear-gradient(to right, #32be8f, #38d39f, #32be8f);
+	background-image: linear-gradient(to right, #32a0be, #38b4d3, #3278be);
 	background-size: 200%;
 	font-size: 1.2rem;
 	color: #fff;

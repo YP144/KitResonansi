@@ -5,9 +5,522 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <h2>Dashboard</h2>
+<div class="dashboard-container">
+    <div class="firstContainer" id="header-container">
+        <!-- header -->
+        <div id="logOutButton">
+            <form action="/logout?_method=DELETE" method="POST">
+                <button class="btn" type="submit">Log Out</button>
+            </form>
+        </div>
+        <div id="judulHeader">
+            <h2>Praktikum Resonansi</h2>
+        </div>
+    </div>
+
+    <div class="firstContainer" id="judulDashboard-container">
+        <!-- judul dashboard -->
+        <div>
+            <h3 id="hiNama">Hi <%= name %> !</h3>
+            <h2 id="dashboardText">Dashboard</h2>
+        </div>
+    </div>
+
+    <div class="firstContainer" id="infoValue-container">
+        <!-- info value -->
+        <div class="logoValue" id="logoDB">
+
+        </div> 
+
+        <div class="labelValue" id="valueDB">
+            <p id="ValueLabelDB">0 dB</p>
+        </div>
+
+        <div class="logoValue" id="logoLength">
+
+        </div>
+
+        <div class="labelValue" id="valueLength">
+            <p id="ValueLabelTubeLength">0 cm</p>
+        </div>
+
+        <div class="logoValue" id="logoStatusTombol">
+
+        </div>
+
+        <div class="labelValue" id="valueStatusTombol">
+            <p id="ValueLabelStatusTombol">Diam</p>
+        </div>
+    </div>
+
+    <div class="firstContainer" id="chart-container">
+        <!-- chart -->
+        <div id="containerIndicator">
+            <div id="indicator1"></div>
+            <div id="indicator2"><div id="indicator"></div><p id="textIndicator">Chart Offline</p></div>
+            <div id="indicator3"></div>
+        </div>
+        
+        <div class="canvasChart">
+            <div>
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </div>
     
+    <div class="firstContainer" id="tombol-container">
+        <!-- tombol -->
+        <div class="sectionTombol" id="sectionTombolData">
+            <h6 class="judulTombol">Data Kontrol</h6>
+            <div class="tombolTombol">
+                <div>
+                    <button class="btn" id="buttonStart" value="1" onclick="getData('buttonStart')">Start</button>
+                </div>
+                <div>
+                    <button class="btn" id="buttonStop" value="0" onclick="getData('buttonStop')">Stop</button>
+                </div>
+                <div>
+                    <button class="btn" id="buttonReset" onclick="confirmReset()">Reset</button>
+                </div>
+                <div>
+                    <button class="btn" id="exportButton" onclick="exportData()">Save Data</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sectionTombol" id="sectionTombolPiston">
+            <h6 class="judulTombol">Piston Kontrol</h6>
+            <div class="tombolTombol">
+                <div>
+                    <button class="btn" id="buttonMundur" value="1" onclick="changeTopicTombol('buttonMundur')">Mundur</button>
+                </div>
+                <div>
+                    <button class="btn" id="buttonDiam" value="0" onclick="changeTopicTombol('buttonDiam')">Diam</button>
+                </div>
+                <div>
+                    <button class="btn" id="buttonMaju" value="2" onclick="changeTopicTombol('buttonMaju')">Maju</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="firstContainer" id="footer-container">
+        <div id="judulFooter">
+            <p>Tim Praktikum Resonansi IIOT 2023</p>
+        </div>
+        <div id="credits">
+            <div><p> I Made Wiratathya Putramas TF'20 </p></div>
+            <div><p> | </p></div>
+            <div><p> Yosep Putra Setiyanto TF'20 </p></div>
+            <div><p> | </p></div>
+            <div><p> Jihad Zakki Darajad TF'20 </p></div>
+            <div><p> | </p></div>
+            <div><p> Azizah TF'19 </p></div>
+            <div><p> | </p></div>
+            <div><p> Azriel Rahman Andradit TF'19 </p></div>
+            <div><p> | </p></div>
+            <div><p> Duta Salam Putro MS'19 </p></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let graphdb =  0;
+    let graphLength = 0;
+    const socket = io();
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Data dB',
+                    data: [],
+                    fill: false,
+                    borderColor: 'rgb(250, 150, 100)',
+                    tension: 0.1,
+                   
+                }
+
+                // ,{
+                //     label: 'Panjang Tabung',
+                //     data: [],
+                //     fill: false,
+                //     borderColor: 'rgb(75, 192, 192)',
+                //     tension: 0.1
+                // }
+            ]
+
+        },
+
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Visualisasi Data'
+                }
+            }
+        }
+      });
+
+    // Mengirimkan nilai tombol kontrol data ke server
+    function getData(buttonId) {
+      const value = document.getElementById(buttonId).value;
+      socket.emit('getData', value);
+      if (value == '0'){
+        document.getElementById('indicator').style.backgroundColor = "hotpink";  
+        document.getElementById('textIndicator').innerText = "Chart Offline";
+      } else if (value == '1'){
+        document.getElementById('indicator').style.backgroundColor = "aquamarine";  
+        document.getElementById('textIndicator').innerText = "Chart Online";
+      }
+    }
+
+    // Mengirimkan nilai tombol kontrol piston ke server
+    function changeTopicTombol(buttonId) {
+        const value = document.getElementById(buttonId).value;
+        socket.emit('buttonClick', value);
+    }
+
+    // Mengirimkan nilai tombol save data ke server
+    function exportData() {
+      socket.emit('exportData');
+    }
+
+    // Mengirimkan input tombol Reset ke server
+    function resetDatabase() {
+        const value = 1;
+        socket.emit('ResetData', value);
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        // chart.data.datasets[1].data = [];
+        chart.update();
+    }
+    function confirmReset() {
+      if (confirm("Semua data yang telah direkam akan dihapus! Yakin untuk mereset ?") == true) {
+        resetDatabase();
+      }
+    }
+    function updateGraph(graphdb,graphLength) {
+        chart.data.labels.push(graphLength);
+        chart.data.datasets[0].data.push(graphdb);
+        // chart.data.datasets[1].data.push(graphLength);
+        chart.update();
+    }
+
+    // Fungsi untuk menampilkan nilai topic pada halaman
+    socket.on('valuedb', (value) => {
+      const labeldb = document.getElementById('ValueLabelDB')
+        console.log(value);
+        labeldb.innerText = ` ${value} dB`;
+        graphdb = value;
+        updateGraph(graphdb,graphLength);
+      });
+
+    // Fungsi untuk menampilkan nilai topic pada halaman
+    socket.on('valueTubeLength', (value) => {
+      const labelLength = document.getElementById('ValueLabelTubeLength')
+        console.log(value);
+        labelLength.innerText = ` ${value} cm`;
+        graphLength = value;
+        updateGraph(graphdb,graphLength);
+      });
+
+    // Fungsi untuk menampilkan nilai topic kontrol piston pada halaman
+    socket.on('valueBtn', (value) => {
+        const labelTombol = document.getElementById('ValueLabelStatusTombol')
+        console.log(value);
+        if(value == 1){
+            labelTombol.innerText = ` Mundur`;
+        } else if(value == 0){
+            labelTombol.innerText = ` Diam`;
+        } else if(value == 2){
+            labelTombol.innerText = ` Maju`;
+        }
+        
+    });
+
+    socket.on('downloadFile', function() {
+        window.location.href = '/praktikum_data.xlsx';
+    });
+
+    
+</script>
+
 </body>
+<style>
+
+.btn{
+	display: block;
+	width: 130%;
+	height: 30px;
+	border-radius: 2rem;
+	outline: none;
+	border: none;
+	background-image: linear-gradient(to right, #32be8f, #38d39f, #32be8f);
+	background-size: 200%;
+	font-size: 0.8rem;
+	color: #fff;
+	font-family: 'Poppins', sans-serif;
+	text-transform: uppercase;
+	margin: 1rem 0;
+	cursor: pointer;
+	transition: .7s;
+}
+
+
+.btn:hover{
+	background-position: right;
+}
+
+.dashboard-container{
+    display: flex;
+    flex-direction: column;
+    background: #b6ddd9;
+}
+/* -------------------------------------- */
+#header-container{
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(145deg, #00725c, #00604d);
+    box-shadow:  5px 5px 14px #005544,
+             -5px -5px 14px #b6ddd9;
+
+}
+#judulHeader{
+    align-self: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+	color: rgb(252, 255, 248);
+	font-family: 'Poppins', sans-serif;
+    
+}
+
+#logOutButton{
+    align-self: flex-end;
+    margin-right: 5%;
+}
+/* ------------------------------------- */
+
+#judulDashboard-container{
+    font-size: 2rem;
+	color: #628f85;
+	font-family: 'Poppins', sans-serif;
+    
+}
+
+#dashboardText{
+    margin-block-start: 0em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-left: 5%;
+}
+
+#hiNama{
+    margin-block-start: 0.5em;
+    margin-block-end: 0em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    padding-left: 3%;
+}
+
+/* ------------------------------------- */
+
+#infoValue-container{
+    display: grid;
+    grid-template-columns: repeat(27, 2%);
+    grid-template-rows: repeat(4, 30px);
+    justify-content: center;
+}
+.logoValue{
+    padding: 1%;
+    margin: 1%;
+    z-index: 1;
+    border-radius: 1rem;
+}
+.labelValue{
+    padding: 1%;
+    margin: 1%;
+    background-color: rgb(88, 235, 130);
+    border-radius: 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+	color: black;
+	font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#logoDB{
+    grid-row: 1/3;
+    grid-column: 4/6;
+    background: linear-gradient(145deg, #6cb7fd, #5b9ad4);
+box-shadow:  5px 5px 14px #5087ba,
+             -5px -5px 14px #b6ddd9;
+}
+#valueDB{
+    grid-row: 2/5;
+    grid-column: 5/9;
+    background: linear-gradient(145deg, #c5e9ff, #a6c4dd);
+box-shadow:  5px 5px 14px #91acc2,
+             -5px -5px 14px #b6ddd9;
+}
+#logoLength{
+    grid-row: 1/3;
+    grid-column: 12/14;
+    background: linear-gradient(145deg, #e45e5e, #c04f4f);
+box-shadow:  5px 5px 14px #9e4141,
+             -5px -5px 14px #b6ddd9;
+}
+#valueLength{
+    grid-row: 2/5;
+    grid-column: 13/17;
+    background: linear-gradient(145deg, #ffc2c8, #daa3a8);
+box-shadow:  5px 5px 14px #bf8f94,
+             -5px -5px 14px #b6ddd9;
+}
+#logoStatusTombol{
+    grid-row: 1/3;
+    grid-column: 20/22;
+    background: linear-gradient(145deg, #dde572, #bac160);
+box-shadow:  5px 5px 14px #999e4f,
+             -5px -5px 14px #b6ddd9;
+}
+#valueStatusTombol{
+    grid-row: 2/5;
+    grid-column: 21/25;
+    background: linear-gradient(145deg, #ffffd2, #e4dfb0);
+box-shadow:  5px 5px 14px #c8c49b,
+             -5px -5px 14px #b6ddd9;
+}
+/* ------------------------------------ */
+#chart-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#containerIndicator{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 2fr 3fr;
+    grid-template-rows: 20px;
+    padding-bottom: 10px;
+}
+#indicator1{
+    height: 20px;
+    grid-row: 1/2;
+    grid-column: 1/2;
+}
+#indicator2{
+    height: 20px;
+    grid-row: 1/2;
+    grid-column: 2/3;
+    display: flex;
+}
+#textIndicator{
+    margin-block-start: 0em;
+    margin-block-end: 0em;
+    padding-left: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+	color: black;
+	font-family: 'Poppins', sans-serif;
+}
+#indicator3{
+    height: 20px;
+    grid-row: 1/2;
+    grid-column: 3/4;
+}
+#indicator{
+    height: 20px;
+    width: 20px;
+    background-color: hotpink;
+    border-radius: 50%;
+}
+.canvasChart{
+    /* scale: 80%; */
+    max-width : 75%;
+    margin-left: 15%;
+    margin-right: 15%;
+    /* margin-top: -3rem; */
+    padding: 30px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    box-shadow:  5px 5px 14px #c9c9c9,
+             -5px -5px 14px #b6ddd9;
+}
+/* ------------------------------------ */
+#tombol-container{
+    display:flex;
+    justify-content: space-evenly;
+    margin-top: 25px;
+    /* margin-top: -2rem; */
+}
+.sectionTombol{
+    display: flex;
+    flex-direction: column;
+    border-radius: 1rem;
+    width: 25%;
+    background: linear-gradient(145deg, #a4fffb, #8ae6d4);
+    box-shadow:  5px 5px 14px #79c9ba,
+             -5px -5px 14px #b6ddd9;
+}
+.judulTombol{
+    align-self: center;
+    margin-block-start: 1rem;
+    margin-block-end: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+	color: rgb(24, 101, 90);
+	font-family: 'Poppins', sans-serif;
+}
+.tombolTombol{
+    display : flex;
+    padding: 1em;
+    border-radius: 1rem;
+    justify-content: space-evenly;
+    background: linear-gradient(145deg, #e0ffff, #bce6dd);
+box-shadow:  5px 5px 14px #a5c9c2;
+             /* -5px -5px 14px #b6ddd9; */
+}
+/* ----------------------------------- */
+
+/* ----------------------------------- */
+#footer-container{
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(145deg, #00725c, #00604d);
+    box-shadow:  5px 5px 14px #005544,
+             -5px -5px 14px #b6ddd9;
+    margin-top: 3rem;
+    
+}
+#judulFooter{
+    align-self: center;
+    font-size: 1rem;
+    font-weight: 400;
+	color: rgb(219, 249, 242);
+	font-family: 'Poppins', sans-serif;
+}
+#credits{
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 0.8rem;
+    font-weight: 400;
+	color: rgb(219, 249, 242);
+	font-family: 'Poppins', sans-serif;
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+</style>
 </html>

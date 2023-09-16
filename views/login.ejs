@@ -8,48 +8,57 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap">
     <script src="https://kit.fontawesome.com/a81368914c.js"></script>
     <link rel="stylesheet" href="/style.css" type="text/css">
-    <script src="viewport" ></script>
+    <!-- <script src="viewport" ></script> -->
     
 </head>
-<script type="text/javascript" src="/js/main.js"></script>
+
 <body>
     <div class="container">
+
         <div class="img">
-            <img src="/bebas.svg">
+            <img src="bebas.png">
         </div>
+
         <div class="login-content">
-            <form action="login" method="POST">
-				<img src="/avatar.svg">
-				<h2 class="title">Login</h2>
-           		<div class="input-div one">
-           		   <div class="i">
-           		   		<i class="fas fa-user"></i>
-           		   </div>
-           		   <div class="div">
-           		   		<!-- <h5>Username</h5> -->
-           		   		<input type="text" class="input" name = "nama" placeholder="nama" required>
-           		   </div>
-           		</div>
-           		<div class="input-div pass">
-           		   <div class="i"> 
-           		    	<i class="fas fa-lock"></i>
-           		   </div>
-           		   <div class="div">
-           		    	<!-- <h5>NIM</h5> -->
-           		    	<input type="text" class="input" name = "NIM" placeholder="NIM" required >
-            	   </div>
-            	</div>
-            	<a href="#">Forgot Password?</a>
-            	<input type="submit" class="btn" value="Login">
+            <form action="/login" method="post">
+                <img src="logo itb.jpeg" alt="">
+                <h2 class="title">Login</h2>
+                
+                <div class="input-div one">
+                    <div class="i">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div class="div">
+                        <input type="text" class="input" id="email" name="email" placeholder="NIM" required>
+                    </div>
+                </div>
+            
+                <div class="input-div pass">
+                    <div class="i">
+                        <i class="fas fa-lock"></i>
+                    </div>
+
+                    <div class="div">
+                        <input type="password" id="password" name="password" placeholder="password" required>  
+                    </div>                    
+                </div>
+
+                <div>
+                    <p>Don't have an account? <a href="http://localhost:144/register">Register here</a>.</p>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn">Login</button>
+                </div>            
             </form>
-            <!-- <form action="./login" method="post">
-                <img src="/avatar.png">
-                <h2 class="title">LOGIN</h2>
-                <input type="text" name = "nama" placeholder="nama" required>
-                <input type="text" name = "NIM" placeholder="NIM" required>
-                <button type="submit">Submit</button>
-            </form> -->
+            <div id="notifMessages">
+                <% if (messages.error) { %>
+                    <%= messages.error %>
+                    <% } %>
+            </div>
         </div>
+
     </div>
 </body>
 </html>
